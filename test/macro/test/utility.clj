@@ -27,12 +27,12 @@
   (is (= '(nil) (mklist nil)))
   (is (= () (mklist ()))))
 
-(deftest test-longer
-  (testing "longer collection"
-    (is (= true (longer (range 10) (range 7))))
-    (is (= true (longer (range 10) (range 0))))
-    (is (= false (longer (range 7) (range 10))))
-    (is (= false (longer (range 0) (range 10))))))
+(deftest test-longer?
+  (testing "longer? collection"
+    (is (= true (longer? (range 10) (range 7))))
+    (is (= true (longer? (range 10) (range 0))))
+    (is (= false (longer? (range 7) (range 10))))
+    (is (= false (longer? (range 0) (range 10))))))
 
 
 (deftest test-my-filter
@@ -50,3 +50,9 @@
   (testing "invalid my-group"
     (is (thrown? IllegalArgumentException (my-group (range 10) 0)))
     (is (thrown? IllegalArgumentException (my-group (range 10) -4)))))
+
+(deftest test-my-flatten
+  (is (= '(0 1 2) (my-flatten(range 3))))
+  (is (= '() (my-flatten ())))
+  (is (= '() (my-flatten '(() ()))))
+  (is (= '(1 2 3 4) (my-flatten '(1 (2 (3) 4))))))

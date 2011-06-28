@@ -30,7 +30,7 @@
     (list obj)))
 
 
-(defn longer [x y]
+(defn longer? [x y]
   (letfn [(compare [x y]
             (and (coll? x)
                  (or (nil? y)
@@ -59,3 +59,24 @@
       (rec coll (transient []))
       ())))
 
+(defn atomic? [x]
+  (not (coll? x)))
+
+(defn my-flatten [lst]
+  (letfn [(rec [x acc]
+            (cond (atomic? x) (conj acc x)
+                  (empty? x) acc
+                  :else (rec (first x) (rec (rest x) acc))))]
+    
+    (rec lst ())))
+
+;; (defn prune [coll f]
+;;   (letfn [(rec [tree acc]
+;;             (cond (empty? tree) (reverse acc)
+;;                   (list? (first tree)) (rec (rest tree)
+;;                                             (conj acc (rec (first tree) ())))
+;;                   :t (rec (rest tree)
+;;                           (if (f (first tree))
+;;                             acc
+;;                             (conj acc (first tree))))))]
+;;     (rec coll ())))
