@@ -5,15 +5,15 @@
 (deftest test-find2
   (testing "find2"
    (let [lst '(one two three)]
-     (is (= ['one true] (find2 #(= % 'one) lst)))
-     (is (= ['two true] (find2 #(= % 'two) lst)))
-     (is (= ['three true] (find2 #(= % 'three) lst)))
+     (is (= ['one true lst] (find2 #(= % 'one) lst)))
+     (is (= ['two true (rest lst)] (find2 #(= % 'two) lst)))
+     (is (= ['three true (nthnext lst 2)] (find2 #(= % 'three) lst)))
      (is (= nil (find2 #(= % 'four) lst))))))
 
 (deftest test-single
-  (is (= true (truthy? (single? '(hello)))))
-  (is (= true (falsey? (single? ()))))
-  (is (= true (falsey? (single? (range 10))))))
+  (is (single? '(hello)))
+  (is (not (single? ())))
+  (is (not (single? (range 10)))))
 
 
 (deftest test-append
@@ -29,10 +29,10 @@
 
 (deftest test-longer?
   (testing "longer? collection"
-    (is (= true (longer? (range 10) (range 7))))
-    (is (= true (longer? (range 10) (range 0))))
-    (is (= false (longer? (range 7) (range 10))))
-    (is (= false (longer? (range 0) (range 10))))))
+    (is (longer? (range 10) (range 7)))
+    (is (longer? (range 10) (range 0)))
+    (is (not (longer? (range 7) (range 10))))
+    (is (not (longer? (range 0) (range 10))))))
 
 
 (deftest test-my-filter
@@ -56,3 +56,34 @@
   (is (= '() (my-flatten ())))
   (is (= '() (my-flatten '(() ()))))
   (is (= '(1 2 3 4) (my-flatten '(1 (2 (3) 4))))))
+
+(deftest test-prune
+  (is (= (range 5) (prune (range 5) (constantly false))))
+  (is (= () (prune (range 5) (constantly true))))
+  (is (= (range 0 10 2) (prune (range 10) odd?))))
+
+(deftest test-before
+  (testing "valid lists"
+    (let [lst (range 10)]
+      (is (before lst 1 2))
+      (is (before lst 1 100))
+      (is (not (before lst 2 1)))
+      (is (not (before lst 20 50)))))
+  (testing "invalid lists"
+    (is (not (before 53 20 50)))))
+
+
+(deftest test-after
+  (testing "valid lists"
+    (let [lst (range 10)]
+      (is (not (after lst 1 2)))
+      (is (not (after lst 1 100)))
+      (is (after lst 2 1)))))
+
+
+(deftest test-duplicate?
+  (is (falsey? (duplicate? (range 5) 2)))
+  (is (duplicate? (list 1 2 2 3 4) 2))
+  (is (duplicate? (range 5) 1 #(rem % 2))))
+
+(deftest test-split-if)

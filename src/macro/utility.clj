@@ -1,12 +1,5 @@
-(ns macro.utility)
-
-(defn find2 [f coll]
-  (if (empty? (seq coll))
-    nil
-    (if-let [val (f (first coll))]
-      [(first coll) val]
-      (recur f (rest coll)))))
-
+(ns macro.utility
+  (:require [swank.core]))
 
 (defn truthy? [x]
   (if x
@@ -70,13 +63,55 @@
     
     (rec lst ())))
 
-;; (defn prune [coll f]
-;;   (letfn [(rec [tree acc]
-;;             (cond (empty? tree) (reverse acc)
-;;                   (list? (first tree)) (rec (rest tree)
-;;                                             (conj acc (rec (first tree) ())))
-;;                   :t (rec (rest tree)
-;;                           (if (f (first tree))
-;;                             acc
-;;                             (conj acc (first tree))))))]
-;;     (rec coll ())))
+(defn prune [coll f]
+  (letfn [(rec [tree acc]
+            (cond (empty? tree) (reverse acc)
+                  (seq? (first tree)) (rec (rest tree)
+                                           (conj acc (rec (first tree) ())))
+                  :t (rec (rest tree)
+                          (if (f (first tree))
+                            acc
+                            (conj acc (first tree))))))]
+    (rec coll ())))
+
+
+;;; Search
+
+(defn find2 [f coll]
+  (if (empty? (seq coll))
+    nil
+    (if-let [val (f (first coll))]
+      [(first coll) val coll]
+      (recur f (rest coll)))))
+
+
+(defn before [lst x y & {:keys [test] :or {test =}}]
+  (if (seq? lst)
+    (let [f (first lst)]
+      (cond (test y f) false
+            (test x f) lst
+            :else (recur (next lst) x y {:test test})))))
+
+
+(defn after [lst x y & {:keys [test] :or {test =}}]
+  ;; (println "istest= " (= test =))
+  (let [rst (before lst y x :test test)]
+    (when rst
+      (find2 (partial test x) (rest rst)))))
+
+
+(defn duplicate? [lst x & {:keys [test] :or {test =}}]
+  (let [func (partial test x)
+        [_ _ rem] (find2 func lst)]
+    (if rem
+      (truthy? (find2 func (rest rem))))))
+
+
+(defn split-if [f coll]
+  (loop [lst coll
+         acc (transient [])]
+    (if (or (empty? (seq lst))
+            (not (f (first lst))))
+      [(or (seq (persistent! acc)) ()) lst]
+      (recur (rest lst)
+             (conj! acc (first lst))))))
